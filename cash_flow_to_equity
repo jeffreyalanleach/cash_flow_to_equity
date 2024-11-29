@@ -1,0 +1,39 @@
+const HTTP_OK = 200;
+
+const calculateCFTE = (cfo, capEx, cid, pi) => {
+  cfo = parseFloat(cfo);
+  capEx = parseFloat(capEx);
+  cid = parseFloat(cid);
+  pi = parseFloat(pi);
+
+  if (isNaN(cfo) || isNaN(capEx) || isNaN(cid) || isNaN(pi)) {
+    throw new Error('All inputs must be numbers');
+  }
+
+  return (cfo + pi) - (capEx + cid);
+};
+
+const generateResponse = (cfte, cfo, capEx, cid, pi) => {
+  const responseBody = {
+    message: `The Cash Flow To Equity is ${cfte}. This was calculated with the following values: Cash Flow from Operations = ${cfo}, CapEX = ${capEx}, Change in Debt = ${cid}, Proceeds From Issuance of Stock = ${pi}`,
+  };
+
+  return {
+    statusCode: HTTP_OK,
+    body: JSON.stringify(responseBody),
+  };
+};
+
+export const handler = async (event) => {
+  try {
+    const { cfo, capEx, cid, pi } = event;
+    const cfte = calculateCFTE(cfo, capEx, cid, pi);
+    const response = generateResponse(cfte, cfo, capEx, cid, pi);
+    return response;
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: error.message }),
+    };
+  }
+};
